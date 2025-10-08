@@ -1,0 +1,31 @@
+const bookingModel = [
+    {
+        id:1,
+        userId:1,
+        busId:1,
+        seatNumber:["A1","A2"],
+        totalAmount:1000,
+        bookingDate:"2023-10-10",
+        bookingStatus:"Confirmed",
+        paymentStatus:"Paid",
+        journeyDate:"2023-10-15",
+        boardingPoint:"Chennai",
+        droppingPoint:"Bangalore",
+        pnrNumber:"PNR123456",
+        transactionId:"TXN123456",
+        passerngerDetails:[
+            {
+                id:1,
+                name:"sam",
+                age:22,
+                gender:'male'
+            },
+            {
+                id:2,
+                name:"samu",
+                age:21,
+                gender:'male'
+            }
+        ]
+    }
+]
