@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'busModel',
     'seatModel',
-    'busSeats'
+    'busSeats',
 ]
 
 MIDDLEWARE = [

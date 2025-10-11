@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 
-class seatSerilaizer(serializers.ModelSerializer):
+class busModelSerializers(serializers.ModelSerializer):
     class Meta:
-        model = seatModel
+        model=busModel
         fields = '__all__'
