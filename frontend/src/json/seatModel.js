@@ -1,7 +1,7 @@
 const seatModel = [
     {
         id:1,
-
+        busId:1,
         lower_deck_left_sleeper_sit:true,
         lower_deck_left_sleeper_sit_count:5,
         lower_deck_left_seater:false,

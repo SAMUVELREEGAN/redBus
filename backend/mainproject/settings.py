@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'busOwnerModel',
     'rest_framework',
-    'busModel'
+    'busModel',
+    'seatModel',
+    'busSeats'
 ]
 
 MIDDLEWARE = [
