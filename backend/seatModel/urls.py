@@ -4,7 +4,7 @@ from django.urls import path , include
 
 
 router = DefaultRouter()
-router.register(r'seatmodel' , SeatModelViewset)
+router.register(r'seatmodel' , SeatModelViewSet)
 
 urlpatterns = [
     path('' , include(router.urls))

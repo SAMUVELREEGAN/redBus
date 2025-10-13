@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Container, Row, Col, Alert } from "react-bootstrap";
-import api from '../../api/axios'
+import { Table, Button, Modal, Form, Container, Row, Col, Alert, Spinner } from "react-bootstrap";
+import api from "../../api/axios";
 
 const BusModel = () => {
   const [buses, setBuses] = useState([]);
+  const [seatData, setSeatData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingBus, setEditingBus] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     bus_name: "",
     start_location: "",
@@ -20,32 +22,39 @@ const BusModel = () => {
   const [message, setMessage] = useState(null);
   const [variant, setVariant] = useState("info");
 
-  // Load all buses
+  // === Load all buses ===
   const fetchBuses = async () => {
-  try {
-    const owner = JSON.parse(localStorage.getItem("busOwner"));
-    const res = await api.get("busmodel/");
-    // filter buses that belong to this owner
-    const ownerBuses = res.data.filter((bus) => bus.owner === owner.id);
-    setBuses(ownerBuses);
-  } catch (err) {
-    console.error(err);
-    setMessage("Failed to load buses.");
-    setVariant("danger");
-  }
-};
+    setLoading(true);
+    try {
+      const owner = JSON.parse(localStorage.getItem("busOwner"));
+      const [busRes, seatRes] = await Promise.all([
+        api.get("busmodel/"),
+        api.get("seatmodel/"),
+      ]);
 
+      // filter by owner
+      const ownerBuses = busRes.data.filter((bus) => bus.owner === owner.id);
+      setBuses(ownerBuses);
+      setSeatData(seatRes.data);
+    } catch (err) {
+      console.error(err);
+      setMessage("Failed to load buses or seats ❌");
+      setVariant("danger");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchBuses();
   }, []);
 
-  // Handle form change
+  // === Handle form change ===
   const handleChange = (e) => {
     setFormData((s) => ({ ...s, [e.target.name]: e.target.value }));
   };
 
-  // Add or update bus
+  // === Save Bus ===
   const handleSave = async (e) => {
     e.preventDefault();
     try {
@@ -86,7 +95,7 @@ const BusModel = () => {
     }
   };
 
-  // Edit bus
+  // === Edit bus ===
   const handleEdit = (bus) => {
     setEditingBus(bus);
     setFormData({
@@ -97,7 +106,7 @@ const BusModel = () => {
     setShowModal(true);
   };
 
-  // Delete bus
+  // === Delete bus ===
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this bus?")) return;
     try {
@@ -109,6 +118,20 @@ const BusModel = () => {
       console.error(err);
       setMessage("Failed to delete bus ❌");
       setVariant("danger");
+    }
+  };
+
+  // === Check if seats exist for a bus ===
+  const hasSeats = (busId) => {
+    return seatData.some((seat) => seat.busId === busId);
+  };
+
+  // === Navigate to seat management ===
+  const handleSeatAction = (bus) => {
+    if (hasSeats(bus.id)) {
+      window.location.href = `/viewseats/${bus.id}`; // Example: view seats page
+    } else {
+      window.location.href = `/addseats/${bus.id}`; // Example: add seats page
     }
   };
 
@@ -125,57 +148,70 @@ const BusModel = () => {
 
       {message && <Alert variant={variant}>{message}</Alert>}
 
-      {/* === BUS TABLE === */}
-      <Table bordered hover responsive>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Bus Name</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Bus Number</th>
-            <th>Amenities</th>
-            <th>Features</th>
-            <th>Owner</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {buses.map((bus) => (
-            <tr key={bus.id}>
-              <td>{bus.id}</td>
-              <td>{bus.bus_name}</td>
-              <td>{bus.start_location}</td>
-              <td>{bus.end_location}</td>
-              <td>{bus.start_time}</td>
-              <td>{bus.end_time}</td>
-              <td>{bus.bus_number}</td>
-              <td>{bus.amenities.join(", ")}</td>
-              <td>{bus.bus_features.join(", ")}</td>
-              <td>{bus.owner}</td>
-              <td>
-                <Button
-                  size="sm"
-                  variant="outline-primary"
-                  className="me-2"
-                  onClick={() => handleEdit(bus)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline-danger"
-                  onClick={() => handleDelete(bus.id)}
-                >
-                  Delete
-                </Button>
-              </td>
+      {loading ? (
+        <div className="text-center p-5">
+          <Spinner animation="border" />
+        </div>
+      ) : (
+        <Table bordered hover responsive>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Bus Name</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+              <th>Bus Number</th>
+              <th>Amenities</th>
+              <th>Features</th>
+              <th>Seat Setup</th> {/* 👈 NEW COLUMN */}
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {buses.map((bus) => (
+              <tr key={bus.id}>
+                <td>{bus.id}</td>
+                <td>{bus.bus_name}</td>
+                <td>{bus.start_location}</td>
+                <td>{bus.end_location}</td>
+                <td>{bus.start_time}</td>
+                <td>{bus.end_time}</td>
+                <td>{bus.bus_number}</td>
+                <td>{bus.amenities.join(", ")}</td>
+                <td>{bus.bus_features.join(", ")}</td>
+                <td className="text-center">
+                  <Button
+                    size="sm"
+                    variant={hasSeats(bus.id) ? "success" : "warning"}
+                    onClick={() => handleSeatAction(bus)}
+                  >
+                    {hasSeats(bus.id) ? "View Seats" : "Add Seats"}
+                  </Button>
+                </td>
+                <td>
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    className="me-2"
+                    onClick={() => handleEdit(bus)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    onClick={() => handleDelete(bus.id)}
+                  >
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
 
       {/* === MODAL FORM === */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
