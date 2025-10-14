@@ -1,0 +1,99 @@
+.seat-layout-card {
+  background: #fafafa;
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Deck Section */
+.deck-title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.deck-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 50px;
+}
+
+.deck-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Seat Grid */
+.seat-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.seat-grid.two-column {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 8px 16px;
+}
+
+.seat-grid.one-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Seat Box */
+.seat-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #198754;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #198754;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.seater {
+  width: 40px;
+  height: 40px;
+}
+
+.sleeper {
+  width: 40px;
+  height: 90px;
+}
+
+/* Booked seats = red */
+.booked {
+  background-color: #ffdddd;
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.seat-box:hover {
+  transform: scale(1.05);
+}
+
+.seat-label {
+  user-select: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .deck-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .seat-grid.two-column {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .deck-side {
+    width: 100%;
+  }
+}
