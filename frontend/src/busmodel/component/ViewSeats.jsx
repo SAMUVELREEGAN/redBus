@@ -39,6 +39,7 @@ const ViewSeats = () => {
       .filter((s) => s.deck === deck && s.side === side && s.type === type)
       .sort((a, b) => a.seat_number.localeCompare(b.seat_number));
 
+  // ✅ Updated seat box to show price under seat number
   const renderSeatBox = (seat) => (
     <div
       key={seat.id}
@@ -46,12 +47,15 @@ const ViewSeats = () => {
         seat.is_booked ? "booked" : ""
       }`}
     >
-      <span className="seat-label">{seat.seat_number}</span>
+      <div className="seat-content">
+        <span className="seat-label">{seat.seat_number}</span>
+        {seat.price && <span className="seat-price">₹{seat.price}</span>}
+      </div>
     </div>
   );
 
   const renderDeck = (deck) => (
-    <Card className="p-4 mb-5 shadow-sm seat-layout-card">
+    <Card className="p-4 mb-5 shadow-sm seat-layout-card" key={deck}>
       <h5 className="deck-title">{deck.charAt(0).toUpperCase() + deck.slice(1)} Deck</h5>
       <div className="deck-layout">
         {["left", "right"].map((side) => (

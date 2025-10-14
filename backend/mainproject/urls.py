@@ -23,4 +23,5 @@ urlpatterns = [
     path('',include('busOwnerModel.urls')),
     path('',include('busSeats.urls')),
     path('',include('seatModel.urls')),
+    path('',include('cityModel.urls')),
 ]

@@ -3,30 +3,31 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Container, Form, Button, Row, Col, Card } from "react-bootstrap";
 
-// Component to manually add seat numbers for a section
+// Component to manually add seat numbers with price
 const AddSeatNumber = ({ section, deck, side, type, count, onSeatsChange }) => {
-  const [seatNumbers, setSeatNumbers] = useState([]);
+  const [seats, setSeats] = useState([]);
 
-  // Initialize / update seatNumbers whenever count changes
+  // Initialize / update seats array when count changes
   useEffect(() => {
-    setSeatNumbers((prevSeats) => {
-      const newSeats = Array(count).fill("");
-      for (let i = 0; i < Math.min(prevSeats.length, count); i++) {
-        newSeats[i] = prevSeats[i];
-      }
+    setSeats((prevSeats) => {
+      const newSeats = Array(count)
+        .fill("")
+        .map((_, i) => prevSeats[i] || { seat_number: "", price: "" });
       return newSeats;
     });
   }, [count]);
 
-  const handleChange = (index, value) => {
-    const newSeats = [...seatNumbers];
-    newSeats[index] = value;
-    setSeatNumbers(newSeats);
+  // Handle seat number or price change
+  const handleChange = (index, field, value) => {
+    const newSeats = [...seats];
+    newSeats[index] = { ...newSeats[index], [field]: value };
+    setSeats(newSeats);
 
     // Send seat objects to parent
     onSeatsChange(
-      newSeats.map((num) => ({
-        seat_number: num,
+      newSeats.map((s) => ({
+        seat_number: s.seat_number,
+        price: s.price,
         deck,
         side,
         type,
@@ -37,15 +38,23 @@ const AddSeatNumber = ({ section, deck, side, type, count, onSeatsChange }) => {
 
   return (
     <Card className="p-3 mb-3 shadow-sm">
-      <h6>{section} - Add Seat Numbers</h6>
-      {seatNumbers.map((seat, idx) => (
+      <h6>{section.replaceAll("_", " ").toUpperCase()} - Add Seats & Prices</h6>
+      {seats.map((seat, idx) => (
         <Row className="mb-2" key={idx}>
           <Col md={6}>
             <Form.Control
               type="text"
               placeholder={`Seat ${idx + 1} number`}
-              value={seat}
-              onChange={(e) => handleChange(idx, e.target.value)}
+              value={seat.seat_number}
+              onChange={(e) => handleChange(idx, "seat_number", e.target.value)}
+            />
+          </Col>
+          <Col md={6}>
+            <Form.Control
+              type="number"
+              placeholder="Price"
+              value={seat.price}
+              onChange={(e) => handleChange(idx, "price", e.target.value)}
             />
           </Col>
         </Row>
@@ -95,10 +104,9 @@ const AddSeats = () => {
     busId: busId,
   });
 
-  // Collect all manually entered seat numbers
-  const [allSeats, setAllSeats] = useState({}); // key = section
+  const [allSeats, setAllSeats] = useState({}); // stores all seat inputs
 
-  // Handle checkbox/input changes
+  // Handle checkbox/input change
   const handleChange = (e) => {
     const { name, type, checked, value } = e.target;
     setFormData({
@@ -115,14 +123,14 @@ const AddSeats = () => {
     }));
   };
 
-  // Submit
+  // Submit data
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Save formData (seat layout config)
+      // Save seat layout config
       await axios.post("http://127.0.0.1:8000/seatmodel/", formData);
 
-      // Save manually entered seat numbers
+      // Combine all seat arrays
       const seatArrays = Object.values(allSeats).flat();
       if (seatArrays.length > 0) {
         await Promise.all(
@@ -132,15 +140,15 @@ const AddSeats = () => {
         );
       }
 
-      alert("✅ Seat configuration and seat numbers created successfully!");
+      alert("✅ Seats and Prices Added Successfully!");
       navigate(`/viewseats/${busId}`);
     } catch (error) {
       console.error(error);
-      alert("❌ Error creating seat configuration");
+      alert("❌ Error creating seat configuration or seat data");
     }
   };
 
-  // Render a section (checkbox + row + count)
+  // Render seat configuration section
   const renderSection = (label, fieldPrefix) => {
     const enabled = formData[fieldPrefix];
     const count = parseInt(formData[`${fieldPrefix}_count`] || 0);

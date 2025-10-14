@@ -5,6 +5,7 @@ import api from "../../api/axios";
 const BusModel = () => {
   const [buses, setBuses] = useState([]);
   const [seatData, setSeatData] = useState([]);
+  const [cities, setCities] = useState([]); // ✅ New state for cities
   const [showModal, setShowModal] = useState(false);
   const [editingBus, setEditingBus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,6 @@ const BusModel = () => {
         api.get("seatmodel/"),
       ]);
 
-      // filter by owner
       const ownerBuses = busRes.data.filter((bus) => bus.owner === owner.id);
       setBuses(ownerBuses);
       setSeatData(seatRes.data);
@@ -45,8 +45,19 @@ const BusModel = () => {
     }
   };
 
+  // === Load all cities ===
+  const fetchCities = async () => {
+    try {
+      const res = await api.get("city/");
+      setCities(res.data);
+    } catch (err) {
+      console.error("Failed to load cities:", err);
+    }
+  };
+
   useEffect(() => {
     fetchBuses();
+    fetchCities(); // ✅ Load cities on mount
   }, []);
 
   // === Handle form change ===
@@ -122,16 +133,14 @@ const BusModel = () => {
   };
 
   // === Check if seats exist for a bus ===
-  const hasSeats = (busId) => {
-    return seatData.some((seat) => seat.busId === busId);
-  };
+  const hasSeats = (busId) => seatData.some((seat) => seat.busId === busId);
 
   // === Navigate to seat management ===
   const handleSeatAction = (bus) => {
     if (hasSeats(bus.id)) {
-      window.location.href = `/viewseats/${bus.id}`; // Example: view seats page
+      window.location.href = `/viewseats/${bus.id}`;
     } else {
-      window.location.href = `/addseats/${bus.id}`; // Example: add seats page
+      window.location.href = `/addseats/${bus.id}`;
     }
   };
 
@@ -165,7 +174,7 @@ const BusModel = () => {
               <th>Bus Number</th>
               <th>Amenities</th>
               <th>Features</th>
-              <th>Seat Setup</th> {/* 👈 NEW COLUMN */}
+              <th>Seat Setup</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -174,8 +183,8 @@ const BusModel = () => {
               <tr key={bus.id}>
                 <td>{bus.id}</td>
                 <td>{bus.bus_name}</td>
-                <td>{bus.start_location}</td>
-                <td>{bus.end_location}</td>
+                <td>{bus.start_location_name || bus.start_location}</td>
+                <td>{bus.end_location_name || bus.end_location}</td>
                 <td>{bus.start_time}</td>
                 <td>{bus.end_time}</td>
                 <td>{bus.bus_number}</td>
@@ -231,26 +240,40 @@ const BusModel = () => {
               />
             </Form.Group>
 
+            {/* ✅ Start Location Dropdown */}
             <Form.Group className="mb-2">
               <Form.Label>Start Location</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
                 name="start_location"
                 value={formData.start_location}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">-- Select Start City --</option>
+                {cities.map((city) => (
+                  <option key={city.id} value={city.id}>
+                    {city.cityName}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
+            {/* ✅ End Location Dropdown */}
             <Form.Group className="mb-2">
               <Form.Label>End Location</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
                 name="end_location"
                 value={formData.end_location}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">-- Select End City --</option>
+                {cities.map((city) => (
+                  <option key={city.id} value={city.id}>
+                    {city.cityName}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <Row>

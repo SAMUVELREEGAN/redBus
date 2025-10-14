@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'busModel',
     'seatModel',
     'busSeats',
+    'cityModel'
 ]
 
 MIDDLEWARE = [
@@ -84,9 +85,9 @@ WSGI_APPLICATION = 'mainproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ticket_book',
+        'NAME': 'demo',
         'USER':'root',
-        'PASSWORD':'ree007@mas',
+        'PASSWORD':'root',
         'HOST':'localhost',
         'PORT':3306
     }
